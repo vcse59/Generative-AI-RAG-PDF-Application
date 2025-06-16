@@ -45,7 +45,11 @@ Make sure following application is installed and running:
 
 - PDF file is available to upload and use the PDF content as knowledge source.
 - Docker is installed and running.
-
+- Clone the repository:
+    ```bash
+    git clone https://github.com/vcse59/Generative-AI-RAG-PDF-Application.git
+    cd Generative-AI-RAG-PDF-Application
+    ```
 ---
 
 ## Build the docker services
