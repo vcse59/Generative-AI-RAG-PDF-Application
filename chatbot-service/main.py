@@ -134,8 +134,8 @@ def get_host_ip():
     """
     try:
         if IS_HOST_DOCKER.lower() == "true":
-            # If running inside Docker, use the default gateway IP
-            return "host.docker.internal"
+            # If running inside Docker with bridge networking, use service name
+            return "ollama"
 
         # For non-Docker environments, use the local IP address
         system = platform.system()

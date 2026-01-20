@@ -11,7 +11,6 @@ import {
     useWindowDimensions,
 } from 'react-native';
 import RenderHTML from 'react-native-render-html';
-import { OLLAMA_LLM_MODEL_NAME } from '@env';
 
 const ChatbotUI = ({ microserviceHost }) => {
     const [messages, setMessages] = useState([]);
@@ -25,7 +24,7 @@ const ChatbotUI = ({ microserviceHost }) => {
     // Process user query and fetch response
     async function processUserQuery(prompt) {
         try {
-            const response = await fetch(`http://${microserviceHost}:8000/generate`, {
+            const response = await fetch(`${microserviceHost}/generate`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt: prompt })
@@ -71,7 +70,7 @@ const ChatbotUI = ({ microserviceHost }) => {
             setInputMessage("");
             await processUserQuery(inputMessage);
         } catch (error) {
-            console.error('Error sending message:', error);
+            console.error('Error sending message:', error); 
         }
 
         Keyboard.dismiss();

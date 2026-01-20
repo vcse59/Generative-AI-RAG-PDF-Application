@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Linking, StatusBar, AppRegist
 import ChatbotUI from './components/ChatbotUI';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWindowMinimize, faCircleXmark } from '@fortawesome/free-solid-svg-icons';
+import { MICROSERVICE_HOST_URL as MICROSERVICE_HOST} from '@env';
 
 const App = () => {
 
@@ -12,13 +13,11 @@ const App = () => {
     setIsChatVisible(!isChatVisible);
   };
 
-  const [microserviceHost, setMicroserviceHost] = useState(null);
-  // Define microserviceHostInput state
-  const [microserviceHostInput, setMicroserviceHostInput] = useState('');
+  const [microserviceHost, setMicroserviceHost] = useState(MICROSERVICE_HOST || null);
 
   const handleUpdateKnowledgeSource = () => {
     // Sample URL for the update knowledge source action
-    const url = `http://${microserviceHost}:8000/docs`;
+    const url = `${microserviceHost}/docs`;
     Linking.openURL(url).catch(err => console.error("Failed to open URL", err));
   };
 
@@ -36,12 +35,11 @@ const App = () => {
   };
 
   const handleConfigure = () => {
-    if (!microserviceHostInput || !isValidHost(microserviceHostInput)) {
+    if (!microserviceHost || !isValidHost(microserviceHost)) {
       setConfigMessage('Please enter a valid microservice host URL.');
       setConfigMessageType('error');
       return;
     }
-    setMicroserviceHost(microserviceHostInput);
     setConfigMessage('Microservice host configured successfully!');
     setConfigMessageType('success');
   };
@@ -58,54 +56,6 @@ const App = () => {
       <View style={styles.container}>
         <Text style={{ fontWeight: 'bold', fontSize: 22 }}>Welcome to RAG (Retrieval-augmented generation) based chat app</Text>
 
-        {/* Input for microservice host */}
-        {!microserviceHost && <View style={{ marginTop: 20, marginBottom: 10, width: 300 }}>
-          <Text style={{ fontSize: 20, marginBottom: 5, fontWeight: 'bold' }}>Microservice Host URL:</Text>
-          <input
-            type="text"
-            value={microserviceHostInput || ''}
-            onChange={e => {
-              setMicroserviceHostInput(e.target.value);
-              setConfigMessage('');
-            }}
-            placeholder="Enter microservice host URL"
-            style={{
-              padding: 8,
-              borderRadius: 4,
-              border: '1px solid #ccc',
-              width: '100%',
-              marginBottom: 10,
-              fontSize: 16
-            }}
-          />
-          <TouchableOpacity
-            style={{
-              backgroundColor: '#0078d4',
-              padding: 8,
-              borderRadius: 4,
-              alignItems: 'center',
-              marginTop: 5
-            }}
-            onPress={handleConfigure}
-          >
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Configure</Text>
-          </TouchableOpacity>
-
-          {configMessage ? (
-            <Text
-              style={{
-                color: configMessageType === 'success' ? 'green' : 'red',
-                marginTop: 8,
-                marginBottom: 4,
-                fontWeight: 'bold'
-              }}
-            >
-              {configMessage}
-            </Text>
-          ) : null}
-
-        </View>}
-
         {microserviceHost && <TouchableOpacity
           onPress={handleUpdateKnowledgeSource}
           style={[
@@ -115,7 +65,7 @@ const App = () => {
         >
           <Text style={styles.updateText}>Update Knowledge Source</Text>
         </TouchableOpacity>}
-
+        
         {isChatVisible && microserviceHost && (
           <>
             <View style={styles.chatWindow}>
@@ -135,7 +85,7 @@ const App = () => {
           </>
         )}
 
-        {microserviceHost && <TouchableOpacity
+        {<TouchableOpacity
           style={[
             styles.chatButton,
             (!microserviceHost ? { opacity: 0.5 } : {})
