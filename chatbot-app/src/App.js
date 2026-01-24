@@ -53,39 +53,39 @@ const App = () => {
 
   return (
     <>
-      <View style={styles.container}>
-        <Text style={{ fontWeight: 'bold', fontSize: 22 }}>Welcome to RAG (Retrieval-augmented generation) based chat app</Text>
-
-        {microserviceHost && <TouchableOpacity
-          onPress={handleUpdateKnowledgeSource}
-          style={[
-            styles.updateKnowledgeSourceButton
-          ]}
-          disabled={!microserviceHost}
-        >
-          <Text style={styles.updateText}>Update Knowledge Source</Text>
-        </TouchableOpacity>}
-        
-        {isChatVisible && microserviceHost && (
-          <>
-            <View style={styles.chatWindow}>
+      <View style={styles.outerContainer}>
+        <View style={styles.centerColumn}>
+          <Text style={styles.welcomeText}>
+            Welcome to <Text style={{ color: '#010b13', fontWeight: 'bold' }}>RAG</Text> (Retrieval-augmented generation) based chat app
+            <Text style={{ fontWeight: 'normal', color: '#222' }}> using PDF as knowledge source</Text>
+          </Text>
+          {microserviceHost && (
+            <TouchableOpacity
+              onPress={handleUpdateKnowledgeSource}
+              style={styles.updateKnowledgeSourceButton}
+              disabled={!microserviceHost}
+            >
+              <Text style={styles.updateText}>Add Knowledge Source</Text>
+            </TouchableOpacity>
+          )}
+          {isChatVisible && microserviceHost && (
+            <View style={styles.chatCardFixed}>
               <View style={styles.chatHeader}>
                 <Text style={styles.chatTitle}>Chat with Us</Text>
                 <View style={styles.chatHeaderActions}>
                   <TouchableOpacity onPress={toggleChatWindow} style={styles.minimizeButton}>
-                    <FontAwesomeIcon icon={faWindowMinimize} size={30} color="black" />
+                    <FontAwesomeIcon icon={faWindowMinimize} size="2x" color="#0078d4" />
                   </TouchableOpacity>
                   <TouchableOpacity onPress={toggleChatWindow} style={styles.closeButton}>
-                    <FontAwesomeIcon icon={faCircleXmark} size={30} color="black" />
+                    <FontAwesomeIcon icon={faCircleXmark} size="2x" color="#0078d4" />
                   </TouchableOpacity>
                 </View>
               </View>
               <ChatbotUI microserviceHost={microserviceHost} />
             </View>
-          </>
-        )}
-
-        {<TouchableOpacity
+          )}
+        </View>
+        <TouchableOpacity
           style={[
             styles.chatButton,
             (!microserviceHost ? { opacity: 0.5 } : {})
@@ -96,47 +96,86 @@ const App = () => {
           disabled={!microserviceHost}
         >
           <Text style={styles.chatIcon}>💬</Text>
-        </TouchableOpacity>}
+        </TouchableOpacity>
       </View>
     </>
   );
 };
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    minHeight: '100vh',
+    width: '100vw',
+    backgroundColor: '#1492c1',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  centerColumn: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 48,
+    marginBottom: 48,
+    width: '100%',
+    maxWidth: 600,
+  },
+  welcomeText: {
+    fontWeight: 'bold',
+    fontSize: 28,
+    textAlign: 'center',
+    marginBottom: 32,
+    color: '#222',
+    lineHeight: 36,
+  },
   chatButton: {
     position: 'fixed',
-    bottom: 20,
-    right: 20,
+    bottom: 32,
+    right: 32,
     backgroundColor: '#0078d4',
-    padding: 10,
+    padding: 16,
     borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
+    boxShadow: '0 4px 16px rgba(0,120,212,0.15)',
+    zIndex: 100,
   },
   chatIcon: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: 28,
   },
-  container: {
-    flex: 1,
-    marginTop: '2rem',
-    justifyContent: 'flex-start',
+  centeredRow: {
+    width: '100%',
     alignItems: 'center',
-    backgroundColor: '#1492c1', // Light background for the entire app
+    justifyContent: 'center',
+    display: 'flex',
+    flexDirection: 'row',
+    marginTop: 32,
   },
-  chatWindow: {
+  welcomeText: {
+    fontWeight: 'bold',
+    fontSize: 22,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  chatCardFixed: {
     position: 'fixed',
-    bottom: 60,
-    right: 60,
-    height: 500,
+    bottom: 96,
+    right: 48,
     width: 400,
-    backgroundColor: '#dae7ec', // Chat window color
-    borderRadius: 15,
-    padding: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
+    minHeight: 500,
+    backgroundColor: '#dae7ec',
+    borderRadius: 18,
+    boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+    padding: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    border: '1px solid #b2cbe4',
+    zIndex: 200,
   },
   chatHeader: {
     flexDirection: 'row',
@@ -160,11 +199,16 @@ const styles = StyleSheet.create({
   },
   updateKnowledgeSourceButton: {
     backgroundColor: '#0078d4',
-    padding: 10,
-    justifySelf: 'flex-start',
-    borderRadius: 5,
-    marginBottom: 20, // Adds spacing below the button
-    marginTop: '12rem'
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    borderRadius: 8,
+    marginBottom: 24,
+    marginTop: 0,
+    shadowColor: '#0078d4',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
   },
   updateText: {
     color: '#fff',

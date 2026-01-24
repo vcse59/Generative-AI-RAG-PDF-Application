@@ -65,6 +65,7 @@ module.exports = {
         static: {
             directory: path.join(__dirname, 'public'),
         },
+        host: '0.0.0.0', // Bind to all network interfaces
         port: 8080, // Port for dev server
     },
 };

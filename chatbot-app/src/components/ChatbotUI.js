@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import {
     StyleSheet,
@@ -9,6 +10,8 @@ import {
     Keyboard,
     TouchableOpacity,
     useWindowDimensions,
+    Text,
+    Image
 } from 'react-native';
 import RenderHTML from 'react-native-render-html';
 
@@ -77,23 +80,44 @@ const ChatbotUI = ({ microserviceHost }) => {
         inputRef.current?.focus();
     };
 
-    const renderMessage = (item) => (
-        <View
-            key={item.id}
-            style={[
-                styles.messageContainer,
-                item.sender === 'user' ? styles.userMessage : styles.botMessage,
-            ]}
-        >
-            {item.sender === 'bot' ? (
-                <RenderHTML contentWidth={width} source={{ html: item.text }} />
-            ) : (
-                <View>
-                    <RenderHTML contentWidth={width} source={{ html: `<p>${item.text}</p>` }} />
-                </View>
-            )}
-        </View>
-    );
+
+    const renderMessage = (item) => {
+        const isUser = item.sender === 'user';
+        return (
+            <View
+                key={item.id}
+                style={[
+                    styles.messageRow,
+                    isUser ? styles.rowUser : styles.rowBot,
+                ]}
+            >
+                {/* For user, push avatar and bubble to the right */}
+                {isUser ? (
+                    <>
+                        <View style={{ flex: 1 }} />
+                        <Image
+                            source={{ uri: 'https://img.icons8.com/color/48/000000/user-male-circle--v1.png' }}
+                            style={styles.avatar}
+                        />
+                        <View style={[styles.messageBubble, styles.userBubble]}>
+                            <RenderHTML contentWidth={width - 100} source={{ html: `<p>${item.text}</p>` }} />
+                        </View>
+                    </>
+                ) : (
+                    <>
+                        <Image
+                            source={{ uri: 'https://img.icons8.com/color/48/000000/robot.png' }}
+                            style={styles.avatar}
+                        />
+                        <View style={[styles.messageBubble, styles.botBubble]}>
+                            <RenderHTML contentWidth={width - 100} source={{ html: item.text }} />
+                        </View>
+                        <View style={{ flex: 1 }} />
+                    </>
+                )}
+            </View>
+        );
+    };
 
     return (
         <KeyboardAvoidingView
@@ -106,77 +130,143 @@ const ChatbotUI = ({ microserviceHost }) => {
                     scrollViewRef.current.scrollToEnd({ animated: true })
                 }
                 style={styles.messagesContainer}
+                contentContainerStyle={{ paddingVertical: 20 }}
+                showsVerticalScrollIndicator={false}
             >
+                {messages.length === 0 && (
+                    <View style={styles.emptyState}>
+                        <Text style={styles.emptyText}>Start the conversation!</Text>
+                    </View>
+                )}
                 {messages.map(renderMessage)}
             </ScrollView>
 
-            <View style={styles.inputContainer}>
-                <TextInput
-                    ref={inputRef}
-                    style={styles.input}
-                    value={inputMessage}
-                    onChangeText={setInputMessage}
-                    placeholder="Type your message..."
-                    multiline={false}
-                    placeholderTextColor="#aaa"
-                />
-                <TouchableOpacity onPress={handleSendMessage}>
-                    <View style={styles.sendButton}>
-                        <RenderHTML contentWidth={50} source={{ html: "<strong>Send</strong>" }} />
-                    </View>
-                </TouchableOpacity>
+            <View style={styles.inputBarShadow}>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        ref={inputRef}
+                        style={styles.input}
+                        value={inputMessage}
+                        onChangeText={setInputMessage}
+                        placeholder="Type your message..."
+                        multiline={false}
+                        placeholderTextColor="#aaa"
+                        onSubmitEditing={handleSendMessage}
+                    />
+                    <TouchableOpacity onPress={handleSendMessage} style={styles.sendButton}>
+                        <Text style={styles.sendButtonText}>➤</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </KeyboardAvoidingView>
     );
 };
 
+
 const styles = StyleSheet.create({
     chatContainer: {
         flex: 1,
+        backgroundColor: 'transparent',
+        borderRadius: 15,
+        overflow: 'hidden',
     },
     messagesContainer: {
         flex: 1,
-        paddingHorizontal: 10,
+        paddingHorizontal: 16,
+        backgroundColor: 'transparent',
     },
-    messageContainer: {
-        maxWidth: '80%',
-        padding: 10,
-        marginBottom: 10,
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: 'black',
-        backgroundColor: 'white',
-        shadowColor: 'black',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
+    messageRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        marginBottom: 16,
+        paddingHorizontal: 4,
     },
-    botMessage: {
-        backgroundColor: '#30b5e7',
-        alignSelf: 'flex-end',
+    rowUser: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'flex-end',
     },
-    userMessage: {
-        backgroundColor: '#73c4e2',
-        alignSelf: 'flex-start',
+    rowBot: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'flex-end',
+    },
+    avatar: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        marginHorizontal: 8,
+        backgroundColor: '#e0e0e0',
+    },
+    messageBubble: {
+        maxWidth: '75%',
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 18,
+        borderBottomLeftRadius: 4,
+        borderBottomRightRadius: 4,
+        boxShadow: '0 1px 2px rgba(0,0,0,0.08)',
+    },
+    userBubble: {
+        backgroundColor: '#0078d4',
+        color: '#fff',
+        marginLeft: 0,
+        marginRight: 8,
+    },
+    botBubble: {
+        backgroundColor: '#f1f1f1',
+        color: '#222',
+        marginLeft: 8,
+        marginRight: 0,
+    },
+    inputBarShadow: {
+        boxShadow: '0 -2px 4px rgba(0,0,0,0.08)',
+        backgroundColor: 'transparent',
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 10,
+        backgroundColor: '#fff',
+        borderRadius: 30,
+        margin: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 6,
+        boxShadow: '0 1px 2px rgba(0,0,0,0.08)',
     },
     input: {
         flex: 1,
-        padding: 10,
+        fontSize: 16,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        backgroundColor: 'transparent',
         borderRadius: 20,
-        backgroundColor: '#fff',
-        marginRight: 10,
+        color: '#222',
     },
     sendButton: {
         backgroundColor: '#0078d4',
-        paddingHorizontal: 15,
+        borderRadius: 20,
+        paddingHorizontal: 16,
         paddingVertical: 8,
-        borderRadius: 10,
+        marginLeft: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        boxShadow: '0 1px 2px rgba(0,120,212,0.15)',
+    },
+    sendButtonText: {
+        color: '#fff',
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
+    emptyState: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 60,
+    },
+    emptyText: {
+        color: '#aaa',
+        fontSize: 18,
+        fontStyle: 'italic',
     },
 });
 

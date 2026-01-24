@@ -37,10 +37,12 @@ dotenv_path = os.path.join(os.path.dirname(__file__), '../config/.env')
 # Load the .env file from the given path
 load_dotenv(dotenv_path=dotenv_path)
 
+
 # Access variables
-OLLAMA_EMBED_MODEL_NAME =   os.getenv("OLLAMA_EMBED_MODEL_NAME")
-OLLAMA_LLM_MODEL_NAME   =   os.getenv("OLLAMA_LLM_MODEL_NAME")
-IS_HOST_DOCKER          =   os.getenv("IS_HOST_DOCKER")
+OLLAMA_EMBED_MODEL_NAME = os.getenv("OLLAMA_EMBED_MODEL_NAME")
+OLLAMA_LLM_MODEL_NAME   = os.getenv("OLLAMA_LLM_MODEL_NAME")
+IS_HOST_DOCKER          = os.getenv("IS_HOST_DOCKER")
+OLLAMA_HOST             = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
 # CORS Middleware
 app.add_middleware(
@@ -87,7 +89,7 @@ def chunk_text(text, chunk_size=500):
 # Function to generate embedding
 async def generate_embedding(text):
     try:
-        response = httpx.post(f"http://{get_host_ip()}:11434/api/embeddings", json={"model": OLLAMA_EMBED_MODEL_NAME, "prompt": text})
+        response = httpx.post(f"{OLLAMA_HOST}/api/embeddings", json={"model": OLLAMA_EMBED_MODEL_NAME, "prompt": text})
         response_data = response.json()
         return response_data['embedding']
     except Exception as e:
@@ -135,7 +137,7 @@ def get_host_ip():
     try:
         if IS_HOST_DOCKER.lower() == "true":
             # If running inside Docker with bridge networking, use service name
-            return "ollama"
+            return "localhost"
 
         # For non-Docker environments, use the local IP address
         system = platform.system()
@@ -192,7 +194,7 @@ async def query_ollama_with_context(context_chunks, user_query):
     
     async with httpx.AsyncClient(timeout=900) as client:
         response = await client.post(
-            f"http://{get_host_ip()}:11434/api/generate",
+            f"{OLLAMA_HOST}/api/generate",
             json={"model": OLLAMA_LLM_MODEL_NAME, "prompt": prompt, "stream": False}
         )
         response_data = response.json()
@@ -227,7 +229,7 @@ async def download_ollama_models():
     try:
         model_names = [OLLAMA_EMBED_MODEL_NAME, OLLAMA_LLM_MODEL_NAME]  # List of models
         for model_name in model_names:
-            response = httpx.post(f"http://{get_host_ip()}:11434/api/pull", json={"model": model_name})
+            response = httpx.post(f"{OLLAMA_HOST}/api/pull", json={"model": model_name})
             if response.status_code != 200:
                 print(f"Failed to download model {model_name}: {response.text}")
     except Exception as e:

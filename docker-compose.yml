@@ -4,50 +4,41 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.ollama
-    image: ollama/ollama
     container_name: ollama
     restart: always
     ports:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
-    networks:
-      - ollama_network
 
   chatbot-service:
     profiles: ["chatbot"]
     build: ./chatbot-service
     container_name: chatbot-service
     restart: always
-    env_file:
-      - ./config/.env
-    depends_on:
-      - ollama
     ports:
       - "8000:8000"
+    env_file:
+      - ./config/.env
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - ollama
     volumes:
       - vector_db:/app/vector_db
       - pdf_storage:/app/pdf_storage
-    networks:
-      - ollama_network
   
   chatbot-app:
     profiles: ["chatapp"]
     build: ./chatbot-app  # Path to the React Native Dockerfile
     container_name: chatbot-app
     restart: always
+    ports:
+      - "8080:8080"
     env_file:
       - ./config/.env  # Load shared env file
     depends_on:
       - chatbot-service  # Ensure FastAPI service starts before frontend
-    ports:
-      - "8080:8080"
-    networks:
-      - ollama_network  # Ensure all services communicate properly
-
-networks:
-  ollama_network:
-    driver: bridge
 
 volumes:
   ollama_data:
