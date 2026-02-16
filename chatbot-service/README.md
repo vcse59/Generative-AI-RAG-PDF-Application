@@ -12,7 +12,7 @@ This is the backend microservice for the RAG-based Generative AI application. It
 - Python 3.10+
 - pip
 - (Recommended) Virtual environment tool (venv, conda, etc.)
-- Ollama running locally or in Docker (see below)
+- Ollama running in Docker (see below)
 - See `../config/.env` for all environment variables
 
 ## Environment Variables
@@ -26,6 +26,8 @@ IS_HOST_DOCKER=false
 ```
 
 The service pulls the configured Ollama models on startup. The first run may take a few minutes while models download.
+
+For local runs with Ollama in Docker, keep `IS_HOST_DOCKER=false` and `OLLAMA_HOST=http://localhost:11434`.
 
 When running via Docker Compose, set `IS_HOST_DOCKER=true` in [config/.env](../config/.env) so citation links resolve to `localhost` in the browser. For local, non-Docker runs, keep it `false`.
 
@@ -43,7 +45,11 @@ When running via Docker Compose, set `IS_HOST_DOCKER=true` in [config/.env](../c
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    pip install -r requirements.txt
    ```
-3. Ensure Ollama is running (see parent README for setup).
+3. Start Ollama in Docker (required for local runs):
+   ```bash
+   docker build -f Dockerfile.ollama -t ollama-app .
+   docker run --rm -it -p 11434:11434 ollama-app
+   ```
 4. Start the backend:
    ```bash
    uvicorn main:app --host 0.0.0.0 --port 8000

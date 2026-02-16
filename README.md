@@ -142,6 +142,8 @@ MICROSERVICE_HOST_URL=http://localhost:8000
 OLLAMA_HOST=http://localhost:11434
 ```
 
+For local runs with Ollama in Docker, keep `IS_HOST_DOCKER=false` and set `OLLAMA_HOST=http://localhost:11434`.
+
 The backend pulls the configured Ollama models on startup. The first run may take a few minutes while models download. If you prefer to pre-pull models, run:
 
 ```bash
@@ -161,28 +163,17 @@ git clone https://github.com/vcse59/Generative-AI-RAG-PDF-Application.git
 cd Generative-AI-RAG-PDF-Application
 ```
 
-### 2. Install Ollama (Required for LLM)
+### 2. Run Ollama (Required for LLM)
 
-- **Windows:**
-    - Download and install from [Ollama Downloads](https://ollama.com/download)
-    - Open a terminal and run:
-        ```powershell
-        ollama run llama3.2:3b
-        ```
-- **Mac OS:**
-    - Install via Homebrew:
-        ```bash
-        brew install ollama
-        ollama run llama3.2:3b
-        ```
-- **Linux:**
-    - Run the official install script:
-        ```bash
-        curl -fsSL https://ollama.com/install.sh | sh
-        ollama run llama3.2:3b
-        ```
+When running the app locally, Ollama must run in Docker. The backend and frontend can run natively on your machine.
 
-See the [Ollama installation guide](https://ollama.com/download) for details.
+From the repo root:
+```bash
+docker build -f Dockerfile.ollama -t ollama-app .
+docker run --rm -it -p 11434:11434 ollama-app
+```
+
+Keep this container running. The backend will connect to Ollama at `http://localhost:11434`.
 
 ### 3. Install npm (Node.js) for your OS
 
@@ -243,11 +234,12 @@ yarn start
     git clone https://github.com/vcse59/Generative-AI-RAG-PDF-Application.git
     cd Generative-AI-RAG-PDF-Application
     ```
-2. **Start Ollama:** (see above for OS-specific instructions)
+2. **Start Ollama in Docker:**
     ```bash
-    ollama run llama3.2:3b
+    docker build -f Dockerfile.ollama -t ollama-app .
+    docker run --rm -it -p 11434:11434 ollama-app
     ```
-   (Leave this terminal running, or run Ollama as a background service.)
+   (Leave this terminal running. Ollama must run in Docker; other services run locally.)
 3. **Set up the backend (chatbot-service):**
     ```bash
     cd chatbot-service
@@ -389,6 +381,7 @@ Example response:
 
 - **Slow first response or startup:** The backend pulls Ollama models on startup. This can take a few minutes the first time. You can pre-pull models with `ollama pull llama3.2:3b` and `ollama pull nomic-embed-text`.
 - **Ollama connection errors:** Verify Ollama is running and `OLLAMA_HOST` matches your setup. For Docker Compose, the backend uses `http://ollama:11434`.
+- **Running locally with Ollama in Docker:** Keep the Docker container running and set `OLLAMA_HOST=http://localhost:11434` with `IS_HOST_DOCKER=false` in [config/.env](config/.env).
 - **Citation links not opening in browser:** When running in Docker Compose, set `IS_HOST_DOCKER=true` in [config/.env](config/.env) so links resolve to `localhost`.
 
 ---

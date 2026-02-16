@@ -30,20 +30,25 @@ MICROSERVICE_HOST_URL=http://localhost:8000
 	git clone https://github.com/vcse59/Generative-AI-RAG-PDF-Application.git
 	cd Generative-AI-RAG-PDF-Application
 	```
-2. Install dependencies:
+2. Start Ollama in Docker (required for local runs):
+	```bash
+	docker build -f Dockerfile.ollama -t ollama-app .
+	docker run --rm -it -p 11434:11434 ollama-app
+	```
+3. Install dependencies:
 	```bash
 	cd chatbot-app
 	npm install
 	# or
 	yarn install
 	```
-3. Start the frontend:
+4. Start the frontend:
 	```bash
 	npm start
 	# or
 	yarn start
 	```
-4. Open http://localhost:8080 in your browser.
+5. Open http://localhost:8080 in your browser.
 
 ## Running in Docker
 
