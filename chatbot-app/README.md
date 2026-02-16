@@ -57,6 +57,8 @@ MICROSERVICE_HOST_URL=http://localhost:8000
 	docker compose up --build -d chatbot-app
 	```
 
+When running via Docker Compose, set `IS_HOST_DOCKER=true` in [config/.env](../config/.env) so citation links resolve to `localhost` in the browser.
+
 ## Configuration
 - All configuration is managed via `config/.env` and Docker Compose.
 - The frontend connects to the backend using the `MICROSERVICE_HOST_URL` variable.

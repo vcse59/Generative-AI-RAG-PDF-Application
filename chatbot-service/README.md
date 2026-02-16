@@ -27,6 +27,8 @@ IS_HOST_DOCKER=false
 
 The service pulls the configured Ollama models on startup. The first run may take a few minutes while models download.
 
+When running via Docker Compose, set `IS_HOST_DOCKER=true` in [config/.env](../config/.env) so citation links resolve to `localhost` in the browser. For local, non-Docker runs, keep it `false`.
+
 ## Running Locally (Windows, Mac, Linux)
 
 1. Clone the repository and navigate to the root folder:

@@ -328,6 +328,10 @@ The Docker Compose file in the root folder manages all dependencies and services
     docker compose up --build chatbot-app
     ```
 
+**Docker + IS_HOST_DOCKER setting**
+
+When running with Docker Compose, set `IS_HOST_DOCKER=true` in [config/.env](config/.env) so the backend generates PDF citation links that resolve correctly from your browser (it forces links to use `localhost`). For local, non-Docker runs, keep `IS_HOST_DOCKER=false`.
+
 ---
 
 ## Uploading Knowledge Sources
@@ -378,6 +382,14 @@ Example response:
     ]
 }
 ```
+
+---
+
+## Troubleshooting
+
+- **Slow first response or startup:** The backend pulls Ollama models on startup. This can take a few minutes the first time. You can pre-pull models with `ollama pull llama3.2:3b` and `ollama pull nomic-embed-text`.
+- **Ollama connection errors:** Verify Ollama is running and `OLLAMA_HOST` matches your setup. For Docker Compose, the backend uses `http://ollama:11434`.
+- **Citation links not opening in browser:** When running in Docker Compose, set `IS_HOST_DOCKER=true` in [config/.env](config/.env) so links resolve to `localhost`.
 
 ---
 
