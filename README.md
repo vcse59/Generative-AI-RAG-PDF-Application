@@ -3,7 +3,9 @@
 
 ## Table of Contents
 - [Overview](#overview)
+- [API Quickstart](#api-quickstart)
 - [Architecture](#architecture)
+- [End-to-End Flow](#end-to-end-flow)
 - [Components](#components)
 - [Configuration](#configuration)
 - [Setup & Running Locally](#setup--running-locally)
@@ -27,9 +29,94 @@ This project is a Generative AI application using the RAG (Retrieval-Augmented G
 ---
 
 
+## API Quickstart
+
+```bash
+# Upload a PDF
+curl -X POST "http://localhost:8000/upload/" \
+    -H "accept: application/json" \
+    -H "Content-Type: multipart/form-data" \
+    -F "file=@./pdf_docs/handbook.pdf"
+
+# Ask a question
+curl -X POST "http://localhost:8000/generate" \
+    -H "accept: application/json" \
+    -H "Content-Type: application/json" \
+    -d "{\"prompt\": \"What is the leave policy?\"}"
+
+# Open the original PDF
+curl -O "http://localhost:8000/pdf/handbook.pdf"
+```
+
+Base URLs:
+- Local (default): API `http://localhost:8000`, UI `http://localhost:8080`, Ollama `http://localhost:11434`
+- Docker Compose: API `http://localhost:8000`, UI `http://localhost:8080`, Ollama `http://localhost:11434` (or the `OLLAMA_HOST` you set in `config/.env`)
+
+---
+
+
 ## Architecture
 
 ![RAG Architecture](RAG%20Architecture.png)
+
+---
+
+
+## End-to-End Flow
+
+```
+User/Browser         Chat UI           FastAPI Backend         Vector DB         Ollama
+         |                  |                    |                    |                |
+         | 1. Upload PDF    |                    |                    |                |
+         |----------------->|  POST /upload/     |                    |                |
+         |                  |------------------->|  chunk + embed     |                |
+         |                  |                    |-----> store -----> |                |
+         |                  |                    |<----- ok ----------|                |
+         |                  |<-------------------|  200 + download_link|               |
+         |                  |                    |                    |                |
+         | 2. Ask question  |  POST /generate    |                    |                |
+         |----------------->|------------------->|  query vectors      |                |
+         |                  |                    |-----> search ----->|                |
+         |                  |                    |<----- chunks ------|                |
+         |                  |                    |  /api/generate --->|-----> LLM ----->|
+         |                  |                    |<----- response ---------------------|
+         |                  |<-------------------|  200 + response + citations          |
+```
+
+1. **Start services:** Run Ollama, the backend (FastAPI), and the frontend (React Native Web) locally or via Docker Compose.
+2. **Upload PDFs (API):** `POST /upload/` with multipart form data.
+     - **Request (multipart/form-data):** field name `file` with a PDF.
+     - **Response (JSON):**
+         ```json
+         {
+             "message": "Processed 12 chunks from handbook.pdf",
+             "download_link": "http://localhost:8000/pdf/handbook.pdf"
+         }
+         ```
+3. **Store vectors:** The backend chunks text, calls Ollama embeddings at `POST /api/embeddings`, and stores vectors in ChromaDB.
+4. **Ask a question (API):** `POST /generate` with JSON payload.
+     - **Request (application/json):**
+         ```json
+         {
+             "prompt": "What is the leave policy?"
+         }
+         ```
+     - **Response (JSON):**
+         ```json
+         {
+             "response": "The leave policy allows ...",
+             "citation_links": [
+                 {
+                     "url": "http://localhost:8000/pdf/handbook.pdf",
+                     "title": "handbook.pdf"
+                 }
+             ]
+         }
+         ```
+5. **Retrieve context:** The backend queries ChromaDB for top matches and builds a context prompt.
+6. **Generate answer:** The backend calls Ollama `POST /api/generate` with the context-augmented prompt.
+7. **Return response:** The backend returns the answer and citations; the UI renders them. PDFs are served via `GET /pdf/{filename}`.
+8. **Iterate:** Users can continue asking follow-up questions; the pipeline repeats with new context retrieval.
 
 ---
 
@@ -55,6 +142,13 @@ MICROSERVICE_HOST_URL=http://localhost:8000
 OLLAMA_HOST=http://localhost:11434
 ```
 
+The backend pulls the configured Ollama models on startup. The first run may take a few minutes while models download. If you prefer to pre-pull models, run:
+
+```bash
+ollama pull llama3.2:3b
+ollama pull nomic-embed-text
+```
+
 ---
 
 
@@ -73,19 +167,19 @@ cd Generative-AI-RAG-PDF-Application
     - Download and install from [Ollama Downloads](https://ollama.com/download)
     - Open a terminal and run:
         ```powershell
-        ollama run llama3
+        ollama run llama3.2:3b
         ```
 - **Mac OS:**
     - Install via Homebrew:
         ```bash
         brew install ollama
-        ollama run llama3
+        ollama run llama3.2:3b
         ```
 - **Linux:**
     - Run the official install script:
         ```bash
         curl -fsSL https://ollama.com/install.sh | sh
-        ollama run llama3
+        ollama run llama3.2:3b
         ```
 
 See the [Ollama installation guide](https://ollama.com/download) for details.
@@ -151,7 +245,7 @@ yarn start
     ```
 2. **Start Ollama:** (see above for OS-specific instructions)
     ```bash
-    ollama run llama3
+    ollama run llama3.2:3b
     ```
    (Leave this terminal running, or run Ollama as a background service.)
 3. **Set up the backend (chatbot-service):**
@@ -215,38 +309,75 @@ yarn start
 
 ## Running in Docker
 
-The Docker Compose file in the root folder manages all dependencies and services. Use the `--profile` option to select which services to run:
+The Docker Compose file in the root folder manages all dependencies and services.
 
+- **All services (build + run):**
+    ```bash
+    docker compose up --build
+    ```
 - **Ollama only:**
     ```bash
-    docker compose --profile ollama up
+    docker compose up --build ollama
     ```
 - **Backend only:**
     ```bash
-    docker compose --profile chatbot up
+    docker compose up --build chatbot-service
     ```
 - **Frontend only:**
     ```bash
-    docker compose --profile chatapp up
+    docker compose up --build chatbot-app
     ```
-- **All services:**
-    ```bash
-    docker compose --profile ollama --profile chatbot --profile chatapp up
-    ```
-
-If you omit `--profile`, all services will run by default.
 
 ---
 
 ## Uploading Knowledge Sources
 
-- Go to [http://localhost:8000/docs](http://localhost:8000/docs) and use the `/upload_pdf` API endpoint to upload a PDF. This converts the PDF content to vector embeddings and saves them to the vector DB (mounted in Docker).
+- Go to [http://localhost:8000/docs](http://localhost:8000/docs) and use the `/upload/` API endpoint to upload a PDF. This converts the PDF content to vector embeddings and saves them to the vector DB (mounted in Docker).
+
+Example (multipart form upload):
+```bash
+curl -X POST "http://localhost:8000/upload/" \
+    -H "accept: application/json" \
+    -H "Content-Type: multipart/form-data" \
+    -F "file=@./pdf_docs/handbook.pdf"
+```
+
+Example response:
+```json
+{
+    "message": "Processed 12 chunks from handbook.pdf",
+    "download_link": "http://localhost:8000/pdf/handbook.pdf"
+}
+```
+
+Note: You can access uploaded files directly using `GET /pdf/{filename}`.
 
 ---
 
 ## Querying the Chatbot
 
 - Open the chat application ([http://localhost:8080](http://localhost:8080)), click the chat icon in the bottom right, and enter your query.
+- Or call the API directly at `POST /generate` with JSON payload:
+
+```bash
+curl -X POST "http://localhost:8000/generate" \
+    -H "accept: application/json" \
+    -H "Content-Type: application/json" \
+    -d "{\"prompt\": \"What is the leave policy?\"}"
+```
+
+Example response:
+```json
+{
+    "response": "The leave policy allows ...",
+    "citation_links": [
+        {
+            "url": "http://localhost:8000/pdf/handbook.pdf",
+            "title": "handbook.pdf"
+        }
+    ]
+}
+```
 
 ---
 

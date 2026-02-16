@@ -130,8 +130,9 @@ const ChatbotUI = ({ microserviceHost }) => {
                     scrollViewRef.current.scrollToEnd({ animated: true })
                 }
                 style={styles.messagesContainer}
-                contentContainerStyle={{ paddingVertical: 20 }}
-                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.messagesContent}
+                showsVerticalScrollIndicator
+                showsHorizontalScrollIndicator
             >
                 {messages.length === 0 && (
                     <View style={styles.emptyState}>
@@ -174,6 +175,10 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: 16,
         backgroundColor: 'transparent',
+        overflow: 'auto',
+    },
+    messagesContent: {
+        paddingVertical: 20,
     },
     messageRow: {
         flexDirection: 'row',

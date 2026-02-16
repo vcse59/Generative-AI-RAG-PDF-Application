@@ -20,10 +20,12 @@ Set these in `config/.env` (example values):
 
 ```
 OLLAMA_EMBED_MODEL_NAME=nomic-embed-text
-OLLAMA_LLM_MODEL_NAME=llama2
+OLLAMA_LLM_MODEL_NAME=llama3.2:3b
 OLLAMA_HOST=http://localhost:11434
 IS_HOST_DOCKER=false
 ```
+
+The service pulls the configured Ollama models on startup. The first run may take a few minutes while models download.
 
 ## Running Locally (Windows, Mac, Linux)
 
@@ -50,16 +52,17 @@ IS_HOST_DOCKER=false
 1. Ensure Docker is installed and running.
 2. From the project root, build and start all services:
    ```bash
-   docker compose --profile ollama --profile chatbot --profile chatapp up -d
+   docker compose up --build -d
    ```
    Or to run only the backend:
    ```bash
-   docker compose --profile chatbot up -d
+   docker compose up --build -d chatbot-service
    ```
 
 ## API Endpoints
-- `/upload_pdf` - Upload a PDF document
-- `/query` - Query the knowledge base
+- `/upload/` - Upload a PDF document and store chunks + embeddings
+- `/generate` - Query the knowledge base and get an answer with citations
+- `/pdf/{filename}` - Download a previously uploaded PDF
 - `/` - Health check
 
 ## Configuration

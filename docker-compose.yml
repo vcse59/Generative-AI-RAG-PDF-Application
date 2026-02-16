@@ -1,6 +1,5 @@
 services:
   ollama:
-    profiles: ["ollama"]
     build:
       context: .
       dockerfile: Dockerfile.ollama
@@ -12,7 +11,6 @@ services:
       - ollama_data:/root/.ollama
 
   chatbot-service:
-    profiles: ["chatbot"]
     build: ./chatbot-service
     container_name: chatbot-service
     restart: always
@@ -29,7 +27,6 @@ services:
       - pdf_storage:/app/pdf_storage
   
   chatbot-app:
-    profiles: ["chatapp"]
     build: ./chatbot-app  # Path to the React Native Dockerfile
     container_name: chatbot-app
     restart: always

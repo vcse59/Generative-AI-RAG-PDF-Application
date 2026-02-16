@@ -6,6 +6,7 @@ This is the frontend for the RAG-based Generative AI application, built with Rea
 ## Features
 - Modern chat UI with avatars and message bubbles
 - Upload and query PDF knowledge sources via backend
+- Renders citation links returned by the backend
 - Responsive design for web
 - Connects to backend via configurable environment variable
 
@@ -49,11 +50,11 @@ MICROSERVICE_HOST_URL=http://localhost:8000
 1. Ensure Docker is installed and running.
 2. From the project root, build and start all services:
 	```bash
-	docker compose --profile ollama --profile chatbot --profile chatapp up -d
+	docker compose up --build -d
 	```
 	Or to run only the frontend:
 	```bash
-	docker compose --profile chatapp up -d
+	docker compose up --build -d chatbot-app
 	```
 
 ## Configuration
